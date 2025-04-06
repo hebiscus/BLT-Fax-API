@@ -1,6 +1,8 @@
 require 'sinatra'
+require "ostruct"
 
 class FaxApp < Sinatra::Base
+
   # @param [String] fax_number
   # @param [File] file
 	post "/fax" do
@@ -13,6 +15,15 @@ class FaxApp < Sinatra::Base
 	end
 
 	get "/faxes" do
+    faxes_directory = Dir.new("./faxes")
+    
+    faxes = faxes_directory.each_child.map do |fax| 
+      fax_content = File.read(File.join(faxes_directory.path, fax))
+      fax_name = File.basename(fax)
+      OpenStruct.new(content: fax_content, fax_name:)
+    end
+
+    # p faxes[0]
 		erb :index, locals: {faxes: faxes}
 	end
 
