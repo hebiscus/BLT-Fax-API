@@ -6,7 +6,7 @@ class FaxApp < Sinatra::Base
   # @param [String] fax_number
   # @param [File] file
 	post "/faxes" do
-		p params
+    return [500, { 'Content-Type' => 'text/plain' }, ["Error: Something went wrong...maybe check if it's raining? Server might be under water"]] if rand < 0.3
 		return "No file selected" unless params[:file] && (tempfile = params[:file][:tempfile]) && (name = params[:file][:filename])
 
   	target = "./faxes/fax-#{params[:fax_number]}-#{name}"
@@ -20,7 +20,6 @@ class FaxApp < Sinatra::Base
     faxes = faxes_directory.each_child.map do |fax|
       begin
         fax_path = File.join(faxes_directory.path, fax)
-    
         fax_content = File.read(fax_path)
         fax_name = File.basename(fax)
         fax_number = fax_name.split("-")[1]
