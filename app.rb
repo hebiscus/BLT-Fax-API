@@ -17,12 +17,20 @@ class FaxApp < Sinatra::Base
 	get "/faxes" do
     faxes_directory = Dir.new("./faxes")
     
-    faxes = faxes_directory.each_child.map do |fax| 
-      fax_content = File.read(File.join(faxes_directory.path, fax))
-      fax_name = File.basename(fax)
-      fax_number = fax_name.split("-")[1]
-      fax_created_at = File.birthtime(File.join(faxes_directory.path, fax)).strftime("%d/%m/%Y-%H:%M:%S")
-      OpenStruct.new(content: fax_content, fax_name:, fax_number:, created_at: fax_created_at)
+    faxes = faxes_directory.each_child.map do |fax|
+      begin
+        fax_path = File.join(faxes_directory.path, fax)
+    
+        fax_content = File.read(fax_path)
+        fax_name = File.basename(fax)
+        fax_number = fax_name.split("-")[1]
+        fax_created_at = File.birthtime(fax_path).strftime("%d/%m/%Y-%H:%M:%S")
+        
+        OpenStruct.new(content: fax_content, fax_name: fax_name, fax_number: fax_number, created_at: fax_created_at)
+      rescue => e
+        puts "skipping #{fax} because of #{e}"
+        next
+      end
     end
 
     p faxes[0].content
