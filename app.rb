@@ -5,7 +5,7 @@ class FaxApp < Sinatra::Base
 
   # @param [String] fax_number
   # @param [File] file
-	post "/fax" do
+	post "/faxes" do
 		p params
 		return "No file selected" unless params[:file] && (tempfile = params[:file][:tempfile]) && (name = params[:file][:filename])
 
