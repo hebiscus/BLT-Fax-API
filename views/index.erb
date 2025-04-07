@@ -1,4 +1,8 @@
-<%= "hello" %>
 <% faxes.each do |fax|%> 
-  <%= "test" %>
+  <div style="border: solid;margin: 1em">
+    <%= fax.fax_name %>
+    <%= fax.fax_number %>
+    <%= fax.created_at%>
+    <%= fax.content %>
+  </div>
 <% end %>

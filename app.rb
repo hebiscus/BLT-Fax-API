@@ -20,10 +20,12 @@ class FaxApp < Sinatra::Base
     faxes = faxes_directory.each_child.map do |fax| 
       fax_content = File.read(File.join(faxes_directory.path, fax))
       fax_name = File.basename(fax)
-      OpenStruct.new(content: fax_content, fax_name:)
+      fax_number = fax_name.split("-")[1]
+      fax_created_at = File.birthtime(File.join(faxes_directory.path, fax)).strftime("%d/%m/%Y-%H:%M:%S")
+      OpenStruct.new(content: fax_content, fax_name:, fax_number:, created_at: fax_created_at)
     end
 
-    # p faxes[0]
+    p faxes[0].content
 		erb :index, locals: {faxes: faxes}
 	end
 
