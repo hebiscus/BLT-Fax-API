@@ -34,7 +34,6 @@ class FaxApp < Sinatra::Base
       end
     end
 
-    p faxes[0].content
 		erb :index, locals: {faxes: faxes}
 	end
 
