@@ -45,8 +45,19 @@ RSpec.describe "FaxApp", type: :request do
       expect(File.read(saved)).to eq("Amazing fax")
     end
 
-    xit "doesn't create a fax if base64 encoded file is not of type text" do
+    it "doesn't create a fax if base64 encoded file is not of type text" do
+      binary = "\x89PNG\r\n\x1A\n".b
+      file = Rack::Test::UploadedFile.new(
+        StringIO.new(binary), "image/png", original_filename: "test.png"
+      )
 
+      post "/faxes", {
+        fax_number: "123",
+        file: file
+      }
+
+      expect(last_response.status).to eq(400)
+      expect(last_response.body).to include("Invalid file type")
     end
 
     xit "doesn't allow to create a fax when token is incorrect" do
