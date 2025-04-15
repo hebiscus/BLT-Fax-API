@@ -1,12 +1,14 @@
 require 'sinatra'
 require "ostruct"
 require_relative "services/flakiness_checker"
+require './config'
 
 class FaxApp < Sinatra::Base
 
   # @param [String] fax_number
   # @param [File] file
 	post "/faxes" do
+    halt 403, "Forbidden: Invalid token" unless authenticated?
     return [500, { 'Content-Type' => 'text/plain' }, ["Error: Something went wrong...maybe check if it's raining? Server might be under water"]] if FlakinessChecker.should_fail?
 		return [400, { 'Content-Type' => 'text/plain' }, ["No file selected"]] unless params[:file] && (tempfile = params[:file][:tempfile]) && (name = params[:file][:filename])
     return [400, { 'Content-Type' => 'text/plain' }, ["Invalid file type"]]  unless params[:file][:type] == "text/plain"
@@ -18,6 +20,7 @@ class FaxApp < Sinatra::Base
 	end
 
 	get "/faxes" do
+    halt 403, "Forbidden: Invalid token" unless authenticated?
     faxes_directory = Dir.new("./faxes")
     
     faxes = faxes_directory.each_child.map do |fax|
@@ -38,6 +41,12 @@ class FaxApp < Sinatra::Base
 
 		erb :index, locals: {faxes: faxes}
 	end
+
+  private
+
+  def authenticated?
+    request.env["HTTP_AUTHORIZATION"] == "Bearer #{AUTH_TOKEN}"
+  end
 
 	run! if __FILE__ == $0
 end

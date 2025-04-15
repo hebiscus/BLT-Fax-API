@@ -2,6 +2,7 @@ require "spec_helper"
 require "rack/test"
 require "./app" 
 require "./services/flakiness_checker"
+require './config'
 
 RSpec.describe "FaxApp", type: :request do
   include Rack::Test::Methods
@@ -15,13 +16,14 @@ RSpec.describe "FaxApp", type: :request do
       File.write("./faxes/fax-1-test.txt", "First fax")
       File.write("./faxes/fax-2-test.txt", "Second fax")
 
+      header "Authorization", "Bearer #{AUTH_TOKEN}"
       get "/faxes"
       
       expect(last_response.status).to eq 200
     end
 
     xit "doesn't return created faxes when token is incorrect" do
-        expect(response.status).to eq 403
+      expect(response.status).to eq 403
     end
   end
 
@@ -33,6 +35,7 @@ RSpec.describe "FaxApp", type: :request do
         StringIO.new("Amazing fax"), "text/plain", original_filename: "test.txt"
       )
 
+      header "Authorization", "Bearer #{AUTH_TOKEN}"
       post "/faxes", {
         fax_number: "123",
         file: file
@@ -51,6 +54,7 @@ RSpec.describe "FaxApp", type: :request do
         StringIO.new(binary), "image/png", original_filename: "test.png"
       )
 
+      header "Authorization", "Bearer #{AUTH_TOKEN}"
       post "/faxes", {
         fax_number: "123",
         file: file
@@ -60,8 +64,19 @@ RSpec.describe "FaxApp", type: :request do
       expect(last_response.body).to include("Invalid file type")
     end
 
-    xit "doesn't allow to create a fax when token is incorrect" do
-        expect(response.status).to eq 402
+    it "doesn't allow to create a fax when token is incorrect" do
+      file = Rack::Test::UploadedFile.new(
+        StringIO.new("Amazing fax"), "text/plain", original_filename: "test.txt"
+      )
+
+      post "/faxes", {
+        fax_number: "123",
+        file: file
+      }
+
+      p last_response
+      expect(last_response.status).to eq 403
+      expect(last_response.body).to include("Forbidden: Invalid token")
     end
   end
 end
