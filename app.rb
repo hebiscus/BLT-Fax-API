@@ -34,7 +34,7 @@ class FaxApp < Sinatra::Base
         puts "skipping #{fax} because of #{e}"
         next
       end
-    end
+    end.sort_by { |fax| fax.created_at}.reverse
 
 		erb :index, locals: {faxes: faxes}
 	end
