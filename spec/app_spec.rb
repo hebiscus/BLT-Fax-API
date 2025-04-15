@@ -1,6 +1,7 @@
 require "spec_helper"
 require "rack/test"
-require_relative "../app" 
+require "./app" 
+require "./services/flakiness_checker"
 
 RSpec.describe "FaxApp", type: :request do
   include Rack::Test::Methods
@@ -26,6 +27,8 @@ RSpec.describe "FaxApp", type: :request do
 
   describe "POST /faxes" do
     it "creates and saves a fax with standard text file format" do
+      allow(FlakinessChecker).to receive(:should_fail?).and_return(false)
+
       file = Rack::Test::UploadedFile.new(
         StringIO.new("Amazing fax"), "text/plain", original_filename: "test.txt"
       )

@@ -1,14 +1,15 @@
 require 'sinatra'
 require "ostruct"
+require_relative "services/flakiness_checker"
 
 class FaxApp < Sinatra::Base
 
   # @param [String] fax_number
   # @param [File] file
 	post "/faxes" do
-    return [500, { 'Content-Type' => 'text/plain' }, ["Error: Something went wrong...maybe check if it's raining? Server might be under water"]] if rand < 0.3
+    return [500, { 'Content-Type' => 'text/plain' }, ["Error: Something went wrong...maybe check if it's raining? Server might be under water"]] if FlakinessChecker.should_fail?
 		return "No file selected" unless params[:file] && (tempfile = params[:file][:tempfile]) && (name = params[:file][:filename])
-
+    
   	target = "./faxes/fax-#{params[:fax_number]}-#{name}"
 		File.open(target, 'wb') {|f| f.write(tempfile.read)}
     "File uploaded successfully!"
@@ -21,6 +22,7 @@ class FaxApp < Sinatra::Base
       begin
         fax_path = File.join(faxes_directory.path, fax)
         fax_content = File.read(fax_path)
+        
         fax_name = File.basename(fax)
         fax_number = fax_name.split("-")[1]
         fax_created_at = File.birthtime(fax_path).strftime("%d/%m/%Y-%H:%M:%S")
