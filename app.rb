@@ -8,11 +8,13 @@ class FaxApp < Sinatra::Base
   # @param [File] file
 	post "/faxes" do
     return [500, { 'Content-Type' => 'text/plain' }, ["Error: Something went wrong...maybe check if it's raining? Server might be under water"]] if FlakinessChecker.should_fail?
-		return "No file selected" unless params[:file] && (tempfile = params[:file][:tempfile]) && (name = params[:file][:filename])
+		return [400, { 'Content-Type' => 'text/plain' }, ["No file selected"]] unless params[:file] && (tempfile = params[:file][:tempfile]) && (name = params[:file][:filename])
+    return [400, { 'Content-Type' => 'text/plain' }, ["Invalid file type"]]  unless params[:file][:type] == "text/plain"
     
   	target = "./faxes/fax-#{params[:fax_number]}-#{name}"
 		File.open(target, 'wb') {|f| f.write(tempfile.read)}
-    "File uploaded successfully!"
+    
+    [200, { 'Content-Type' => 'text/plain' }, ["File uploaded successfully!"]]
 	end
 
 	get "/faxes" do
