@@ -24,17 +24,30 @@ RSpec.describe "FaxApp", type: :request do
     end
   end
 
-  # describe "POST /faxes" do
-  #   it "creates a fax with standard text files" do
+  describe "POST /faxes" do
+    it "creates and saves a fax with standard text file format" do
+      file = Rack::Test::UploadedFile.new(
+        StringIO.new("Amazing fax"), "text/plain", original_filename: "test.txt"
+      )
 
-  #   end
+      post "/faxes", {
+        fax_number: "123",
+        file: file
+      }
 
-  #   it "doesn't create a fax if base64 encoded file is not of type text" do
+      expect(last_response).to be_ok
+      expect(last_response.body).to include("File uploaded successfully!")
 
-  #   end
+      saved = Dir.glob("./faxes/fax-123-*").first
+      expect(File.read(saved)).to eq("Amazing fax")
+    end
 
-  #   it "doesn't allow to create a fax when token is incorrect" do
-  #       expect(response.status).to eq 402
-  #   end
-  # end
+    xit "doesn't create a fax if base64 encoded file is not of type text" do
+
+    end
+
+    xit "doesn't allow to create a fax when token is incorrect" do
+        expect(response.status).to eq 402
+    end
+  end
 end
