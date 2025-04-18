@@ -1,11 +1,11 @@
 class Fax 
   attr_reader :id, :file_path
-  attr_accessor :number, :status
+  attr_accessor :receiver_number, :status
 
-  def initialize(id:, file_path:, number:, status:)
+  def initialize(id:, file_path:, receiver_number:, status:)
     @id = id
     @file_path = file_path
-    @number = number
+    @receiver_number = receiver_number
     @status = status
     @created_at = Time.now
   end
