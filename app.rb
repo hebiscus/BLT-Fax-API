@@ -3,6 +3,7 @@ require "ostruct"
 require_relative "services/flakiness_checker"
 require './config'
 require "./models/fax"
+require "./repositories/faxes"
 
 class FaxApp < Sinatra::Base
 
@@ -18,11 +19,23 @@ class FaxApp < Sinatra::Base
   	target = "./faxes/fax-#{fax_uuid}"
 		File.open(target, 'wb') {|f| f.write(tempfile.read)}
 
-    new_fax = Fax.new(id: fax_uuid, file_path: target, number: params[:receiver_number], status: "pending")
-    p new_fax
+    new_fax = Fax.new(id: fax_uuid, file_path: target, receiver_number: params[:receiver_number], status: "pending")
+
+    begin
+      faxes = JSON.parse(File.read("./db/faxes.json"))
+    rescue
+      faxes = {}
+    end
+
+    faxes[new_fax.id] = new_fax.to_h
+    File.write("./db/faxes.json", JSON.pretty_generate(faxes))
     
     [201, { 'Content-Type' => 'json' }, [new_fax.to_h.to_json]]
 	end
+
+  # get "/faxes/:id" do
+  #   fax = Fax.find(params[:id])
+  # end
 
 	get "/faxes" do
     halt 403, "Forbidden: Invalid token" unless authenticated?
