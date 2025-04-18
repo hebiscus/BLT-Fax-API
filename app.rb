@@ -42,10 +42,26 @@ class FaxApp < Sinatra::Base
 		erb :index, locals: {faxes: faxes}
 	end
 
+  post "/auth" do
+    token = SecureRandom.hex(10)
+
+    begin
+      tokens = JSON.parse(File.read("tokens.json"))
+    rescue
+      tokens = []
+    end
+
+    tokens << token
+    File.write("tokens.json", tokens)
+  
+    [201, { 'Content-Type' => 'json' }, token.to_json]
+  end
+
   private
 
   def authenticated?
-    request.env["HTTP_AUTHORIZATION"] == "Bearer #{AUTH_TOKEN}"
+    tokens = JSON.parse(File.read("tokens.json"))
+    tokens.include?(request.env["HTTP_AUTHORIZATION"].split(" ")[1])
   end
 
 	run! if __FILE__ == $0
