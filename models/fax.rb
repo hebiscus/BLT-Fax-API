@@ -13,7 +13,7 @@ class Fax
   def to_h
     {
       id: @id,
-      number: @number,
+      receiver_number: @receiver_number,
       file_path: @file_path,
       status: @status
     }
