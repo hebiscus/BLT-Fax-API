@@ -2,6 +2,7 @@ require 'sinatra'
 require "ostruct"
 require_relative "services/flakiness_checker"
 require './config'
+require "./models/fax"
 
 class FaxApp < Sinatra::Base
 
@@ -10,13 +11,17 @@ class FaxApp < Sinatra::Base
 	post "/faxes" do
     halt 403, "Forbidden: Invalid token" unless authenticated?
     return [500, { 'Content-Type' => 'text/plain' }, ["Error: Something went wrong...maybe check if it's raining? Server might be under water"]] if FlakinessChecker.should_fail?
-		return [400, { 'Content-Type' => 'text/plain' }, ["No file selected"]] unless params[:file] && (tempfile = params[:file][:tempfile]) && (name = params[:file][:filename])
+		return [400, { 'Content-Type' => 'text/plain' }, ["No file selected"]] unless params[:file] && (tempfile = params[:file][:tempfile])
     return [400, { 'Content-Type' => 'text/plain' }, ["Invalid file type"]]  unless params[:file][:type] == "text/plain"
     
-  	target = "./faxes/fax-#{params[:fax_number]}-#{name}"
+    fax_uuid = SecureRandom.uuid
+  	target = "./faxes/fax-#{fax_uuid}"
 		File.open(target, 'wb') {|f| f.write(tempfile.read)}
+
+    new_fax = Fax.new(id: fax_uuid, file_path: target, number: params[:receiver_number], status: "pending")
+    p new_fax
     
-    [200, { 'Content-Type' => 'text/plain' }, ["File uploaded successfully!"]]
+    [201, { 'Content-Type' => 'json' }, [new_fax.to_h.to_json]]
 	end
 
 	get "/faxes" do
