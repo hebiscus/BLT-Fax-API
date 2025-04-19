@@ -5,7 +5,7 @@ module Repositories
     FAXES_DB = './db/faxes.json'
 
     def all
-      load_all.values.map { |attributes| build(attributes) }
+      load_db.values.map { |attributes| build(attributes) }
     end
 
     def all_with_content
@@ -13,7 +13,7 @@ module Repositories
     end
 
     def find(id)
-      attributes = load_all[id]
+      attributes = load_db[id]
       attributes && build(**attributes)
     end
 
@@ -29,7 +29,7 @@ module Repositories
 
     private
 
-    def load_all
+    def load_db
       File.exist?(FAXES_DB) ? JSON.parse(File.read(FAXES_DB)) : {}
     end
 
