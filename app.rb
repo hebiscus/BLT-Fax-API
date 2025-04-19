@@ -34,7 +34,7 @@ class FaxApp < Sinatra::Base
 	end
 
   get "/faxes/:id" do
-    fax = Repositories::Faxes.new.find_with_content(params[:id])
+    fax = Repositories::Faxes.new.find(params[:id])
     if fax
       [200, { 'Content-Type' => 'json' }, [fax.to_h_with_content.to_json]]
     else 
@@ -44,23 +44,8 @@ class FaxApp < Sinatra::Base
 
 	get "/faxes" do
     halt 403, "Forbidden: Invalid token" unless authenticated?
-    faxes_directory = Dir.new("./faxes")
-    
-    faxes = faxes_directory.each_child.map do |fax|
-      begin
-        fax_path = File.join(faxes_directory.path, fax)
-        fax_content = File.read(fax_path)
-        
-        fax_name = File.basename(fax)
-        fax_number = fax_name.split("-")[1]
-        fax_created_at = File.birthtime(fax_path).strftime("%d/%m/%Y-%H:%M:%S")
-        
-        OpenStruct.new(content: fax_content, fax_name: fax_name, fax_number: fax_number, created_at: fax_created_at)
-      rescue => e
-        puts "skipping #{fax} because of #{e}"
-        next
-      end
-    end.sort_by { |fax| fax.created_at}.reverse
+
+    faxes = Repositories::Faxes.new.find_by_token(token).sort_by { |fax| fax.created_at}.reverse
 
 		erb :index, locals: {faxes: faxes}
 	end
