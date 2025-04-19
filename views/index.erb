@@ -1,8 +1,8 @@
 <% faxes.each do |fax|%> 
   <div style="margin: 1em">
-    <%= fax.fax_name %>
-    <%= fax.fax_number %>
-    <%= fax.created_at%>
-    <%= fax.content %>
+    <p><strong>Fax id:</strong> <%= fax.id %></p>
+    <p><strong>To:</strong> <%= fax.receiver_number %></p>
+    <p>Created at:</strong> <%= fax.created_at %></p>
+    <p><%= fax.content %></p>
   </div>
 <% end %>
