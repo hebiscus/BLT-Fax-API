@@ -1,5 +1,5 @@
 class Fax 
-  attr_reader :id, :file_path, :user_token
+  attr_reader :id, :file_path, :user_token, :created_at
   attr_accessor :receiver_number, :status
 
   def initialize(id:, file_path:, receiver_number:, status:, created_at: Time.now, user_token:)
