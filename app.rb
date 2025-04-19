@@ -54,13 +54,13 @@ class FaxApp < Sinatra::Base
     token = SecureRandom.hex(10)
 
     begin
-      tokens = JSON.parse(File.read("tokens.json"))
+      tokens = JSON.parse(File.read("./auth/tokens.json"))
     rescue
       tokens = []
     end
 
     tokens << token
-    File.write("tokens.json", tokens)
+    File.write("./auth/tokens.json", tokens)
   
     [201, { 'Content-Type' => 'json' }, token.to_json]
   end
@@ -68,7 +68,7 @@ class FaxApp < Sinatra::Base
   private
 
   def authenticated?
-    tokens = JSON.parse(File.read("tokens.json"))
+    tokens = JSON.parse(File.read("./auth/tokens.json"))
     tokens.include?(token)
   end
 
