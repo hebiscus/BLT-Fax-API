@@ -19,7 +19,7 @@ class FaxApp < Sinatra::Base
   	target = "./faxes/fax-#{fax_uuid}"
 		File.open(target, 'wb') {|f| f.write(tempfile.read)}
 
-    new_fax = Fax.new(id: fax_uuid, file_path: target, receiver_number: params[:receiver_number], status: "pending")
+    new_fax = Fax.new(id: fax_uuid, file_path: target, receiver_number: params[:receiver_number], status: "pending", user_token: token)
 
     begin
       faxes = JSON.parse(File.read("./db/faxes.json"))
@@ -79,7 +79,11 @@ class FaxApp < Sinatra::Base
 
   def authenticated?
     tokens = JSON.parse(File.read("tokens.json"))
-    tokens.include?(request.env["HTTP_AUTHORIZATION"].split(" ")[1])
+    tokens.include?(token)
+  end
+
+  def token
+    request.env["HTTP_AUTHORIZATION"].split(" ")[1]
   end
 
 	run! if __FILE__ == $0
