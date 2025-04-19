@@ -1,1 +1,3 @@
 /faxes
+/auth/*.json
+/db/*.json
