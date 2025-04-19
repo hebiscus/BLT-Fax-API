@@ -11,6 +11,10 @@ class Fax
     @created_at = Time.now
   end
 
+  def content
+    File.read(@file_path) if @file_path && File.exist?(@file_path)
+  end
+
   def to_h
     {
       id: @id,
@@ -20,5 +24,9 @@ class Fax
       created_at: @created_at,
       user_token: @user_token
     }
+  end
+
+  def to_h_with_content
+    to_h.merge(content: content)
   end
 end
