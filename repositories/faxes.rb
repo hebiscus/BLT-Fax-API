@@ -5,11 +5,7 @@ module Repositories
     FAXES_DB = './db/faxes.json'
 
     def all
-      load_db.values.map { |attributes| build(attributes) }
-    end
-
-    def all_with_content
-      all.each { |fax| fax.content } 
+      load_db.values.map { |attributes| build(**attributes) }
     end
 
     def find(id)
@@ -17,14 +13,8 @@ module Repositories
       attributes && build(**attributes)
     end
 
-    def find_with_content(id)
-      fax = find(id)
-      fax&.content
-      fax
-    end
-
-    def find_by_token_with_content(token)
-      all_with_content.select { |fax| fax.token == token }
+    def find_by_token(token)
+      all.select { |fax| fax.user_token == token }
     end
 
     private
