@@ -4,6 +4,7 @@ require_relative "services/flakiness_checker"
 require './config'
 require "./models/fax"
 require "./repositories/faxes"
+require_relative "auth/authentication"
 
 class FaxApp < Sinatra::Base
 
@@ -68,8 +69,7 @@ class FaxApp < Sinatra::Base
   private
 
   def authenticated?
-    tokens = JSON.parse(File.read("./auth/tokens.json"))
-    tokens.include?(token)
+    Authentication::TokenValidator.new.valid?(token)
   end
 
   def token
