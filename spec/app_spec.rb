@@ -97,4 +97,21 @@ RSpec.describe "FaxApp", type: :request do
       expect(last_response.body).to include("Forbidden: Invalid token")
     end
   end
+
+  describe "POST /auth" do
+    let(:tokens_path) { "./auth/tokens.json" }
+    
+    it "geerates a new auth token and returns it" do
+      existing_tokens = ["abc123"]
+      allow(SecureRandom).to receive(:hex).with(10).and_return("new_token")
+
+      expect(File).to receive(:read).with(tokens_path).and_return(existing_tokens.to_json)
+      expect(File).to receive(:write).with(tokens_path, existing_tokens + ["new_token"])
+
+      post "/auth"
+
+      expect(last_response.status).to eq 201
+      expect(JSON.parse(last_response.body)).to eq("new_token")
+    end
+  end
 end
