@@ -31,7 +31,6 @@ RSpec.describe "FaxApp", type: :request do
   describe "GET /faxes/:id" do 
     it "returns fax by its id" do
       allow_any_instance_of(Authentication::TokenValidator).to receive(:valid?).with(auth_token).and_return(true)
-      # id passed in as an integer, but params turn it into a string // take care of later
       allow_any_instance_of(Repositories::Faxes).to receive(:find).with(fax_mock.id).and_return(fax_mock)
 
       header "Authorization", "Bearer #{auth_token}"
