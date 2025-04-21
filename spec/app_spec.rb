@@ -13,7 +13,7 @@ RSpec.describe "FaxApp", type: :request do
 
   let(:auth_token) { "dnvp34023" }
 
-  let(:fax_mock) { Fax.new(id: 1, file_path: "", receiver_number: 2, status: "pending", user_token: auth_token, created_at: Time.now)}
+  let(:fax_mock) { Fax.new(id: "1", file_path: "", receiver_number: 2, status: "pending", user_token: auth_token, created_at: Time.now)}
 
   describe "GET /faxes" do
     it "returns faxes associated with token" do
@@ -32,7 +32,7 @@ RSpec.describe "FaxApp", type: :request do
     it "returns fax by its id" do
       allow_any_instance_of(Authentication::TokenValidator).to receive(:valid?).with(auth_token).and_return(true)
       # id passed in as an integer, but params turn it into a string // take care of later
-      allow_any_instance_of(Repositories::Faxes).to receive(:find).with("#{fax_mock.id}").and_return(fax_mock)
+      allow_any_instance_of(Repositories::Faxes).to receive(:find).with(fax_mock.id).and_return(fax_mock)
 
       header "Authorization", "Bearer #{auth_token}"
       get "/faxes/#{fax_mock.id}"
