@@ -2,7 +2,7 @@ require "spec_helper"
 require "rack/test"
 require "./app" 
 require "./services/flakiness_checker"
-require './config'
+require_relative "../auth/authentication"
 
 RSpec.describe "FaxApp", type: :request do
   include Rack::Test::Methods
@@ -11,50 +11,71 @@ RSpec.describe "FaxApp", type: :request do
     FaxApp.new
   end
 
+  let(:auth_token) { "dnvp34023" }
+
+  let(:fax_mock) { Fax.new(id: 1, file_path: "", receiver_number: 2, status: "pending", user_token: auth_token, created_at: Time.now)}
+
   describe "GET /faxes" do
-    it "returns created faxes" do
-      File.write("./faxes/fax-1-test.txt", "First fax")
-      File.write("./faxes/fax-2-test.txt", "Second fax")
+    it "returns faxes associated with token" do
+      allow_any_instance_of(Authentication::TokenValidator).to receive(:valid?).with(auth_token).and_return(true)
+      allow_any_instance_of(Repositories::Faxes).to receive(:find_by_token).with(auth_token).and_return([fax_mock])
 
-      header "Authorization", "Bearer #{AUTH_TOKEN}"
+      header "Authorization", "Bearer #{auth_token}"
       get "/faxes"
-      
-      expect(last_response.status).to eq 200
-    end
 
-    xit "doesn't return created faxes when token is incorrect" do
-      expect(response.status).to eq 403
+      expect(last_response.status).to eq 200
+      expect(last_response.body).to include("1")
+    end
+  end
+
+  describe "GET /faxes/:id" do 
+    it "returns fax by its id" do
+      allow_any_instance_of(Authentication::TokenValidator).to receive(:valid?).with(auth_token).and_return(true)
+      # id passed in as an integer, but params turn it into a string // take care of later
+      allow_any_instance_of(Repositories::Faxes).to receive(:find).with("#{fax_mock.id}").and_return(fax_mock)
+
+      header "Authorization", "Bearer #{auth_token}"
+      get "/faxes/#{fax_mock.id}"
+
+      expect(last_response.status).to eq 200
+      expect(last_response.body).to include("1")
     end
   end
 
   describe "POST /faxes" do
-    it "creates and saves a fax with standard text file format" do
-      allow(FlakinessChecker).to receive(:should_fail?).and_return(false)
 
-      file = Rack::Test::UploadedFile.new(
+    let(:file) do
+      Rack::Test::UploadedFile.new(
         StringIO.new("Amazing fax"), "text/plain", original_filename: "test.txt"
       )
+    end
 
-      header "Authorization", "Bearer #{AUTH_TOKEN}"
+    before do
+      allow(FlakinessChecker).to receive(:should_fail?).and_return(false)
+      allow(File).to receive(:write).and_return(true)
+    end
+
+    it "creates and saves a fax with standard text file format" do
+      allow_any_instance_of(Authentication::TokenValidator).to receive(:valid?).with(auth_token).and_return(true)
+
+      header "Authorization", "Bearer #{auth_token}"
       post "/faxes", {
-        fax_number: "123",
+        receiver_number: "123",
         file: file
       }
 
-      expect(last_response).to be_ok
-      expect(last_response.body).to include("File uploaded successfully!")
-
-      saved = Dir.glob("./faxes/fax-123-*").first
-      expect(File.read(saved)).to eq("Amazing fax")
+      expect(last_response.status).to eq 201
+      expect(last_response.body).to include("id").and include("receiver_number").and include("user_token")
     end
 
     it "doesn't create a fax if base64 encoded file is not of type text" do
+      allow_any_instance_of(Authentication::TokenValidator).to receive(:valid?).with(auth_token).and_return(true)
       binary = "\x89PNG\r\n\x1A\n".b
       file = Rack::Test::UploadedFile.new(
         StringIO.new(binary), "image/png", original_filename: "test.png"
       )
 
-      header "Authorization", "Bearer #{AUTH_TOKEN}"
+      header "Authorization", "Bearer #{auth_token}"
       post "/faxes", {
         fax_number: "123",
         file: file
@@ -65,16 +86,13 @@ RSpec.describe "FaxApp", type: :request do
     end
 
     it "doesn't allow to create a fax when token is incorrect" do
-      file = Rack::Test::UploadedFile.new(
-        StringIO.new("Amazing fax"), "text/plain", original_filename: "test.txt"
-      )
 
+      header "Authorization", "Bearer invalid"
       post "/faxes", {
-        fax_number: "123",
+        receiver_number: "123",
         file: file
       }
 
-      p last_response
       expect(last_response.status).to eq 403
       expect(last_response.body).to include("Forbidden: Invalid token")
     end
