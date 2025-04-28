@@ -1,7 +1,6 @@
 require 'sinatra'
 require "ostruct"
 require_relative "services/flakiness_checker"
-require './config'
 require "./models/fax"
 require "./repositories/faxes"
 require_relative "auth/authentication"
