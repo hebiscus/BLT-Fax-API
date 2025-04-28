@@ -7,7 +7,7 @@ module Repositories
     FAXES_DB = './db/faxes.json'
 
     def all
-      load_db.values.map { |attributes| build(**attributes) }
+      load_db.map { |attributes| build(**attributes) }
     end
 
     def all_pending
@@ -23,10 +23,24 @@ module Repositories
       all.select { |fax| fax.user_token == token }
     end
 
+    def update_pending
+      faxes = load_db
+      faxes.each do |fax|
+        if fax["status"] == "pending"
+          fax["status"] = ["sent", "failed"].sample
+        end
+      end
+      save_faxes(faxes)
+    end
+
     private
 
     def load_db
-      File.exist?(FAXES_DB) ? JSON.parse(File.read(FAXES_DB)) : {}
+      File.exist?(FAXES_DB) ? JSON.parse(File.read(FAXES_DB)) : []
+    end
+
+    def save_faxes(faxes)
+      File.write(FAXES_DB,  JSON.pretty_generate(faxes))
     end
 
     def build(**attributes)
