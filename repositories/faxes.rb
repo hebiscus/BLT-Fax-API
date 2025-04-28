@@ -1,4 +1,6 @@
 require_relative "../models/fax"
+require 'json'
+require 'time'
 
 module Repositories
   class Faxes
@@ -6,6 +8,10 @@ module Repositories
 
     def all
       load_db.values.map { |attributes| build(**attributes) }
+    end
+
+    def all_pending
+      all.select { |fax| fax.status == "pending"}
     end
 
     def find(id)
