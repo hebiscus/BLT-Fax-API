@@ -7,7 +7,7 @@ module Repositories
     FAXES_DB = './db/faxes.json'
 
     def all
-      load_db.map { |attributes| build(**attributes) }
+      load_db.values.map { |attributes| build(**attributes) }
     end
 
     def all_pending
@@ -25,9 +25,10 @@ module Repositories
 
     def update_pending
       faxes = load_db
-      faxes.each do |fax|
+      faxes.values.each do |fax|
         if fax["status"] == "pending"
           fax["status"] = ["sent", "failed"].sample
+          fax["updated_at"] = Time.now
         end
       end
       save_faxes(faxes)
@@ -36,7 +37,7 @@ module Repositories
     private
 
     def load_db
-      File.exist?(FAXES_DB) ? JSON.parse(File.read(FAXES_DB)) : []
+      File.exist?(FAXES_DB) ? JSON.parse(File.read(FAXES_DB)) : {}
     end
 
     def save_faxes(faxes)
