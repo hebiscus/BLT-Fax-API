@@ -4,7 +4,7 @@ require 'time'
 
 module Repositories
   class Faxes
-    FAXES_DB = './db/faxes.json'
+    FAXES_DB = File.expand_path('../db/faxes.json', __dir__)
 
     def all
       load_db.values.map { |attributes| build(**attributes) }
