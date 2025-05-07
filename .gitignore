@@ -1,3 +1,4 @@
 /faxes
 /auth/*.json
 /db/*.json
+/logs
