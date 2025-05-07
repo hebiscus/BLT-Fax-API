@@ -1,2 +1,2 @@
-*/2 * * * * /home/hebi/.rbenv/shims/ruby /home/hebi/personal-projects/BLT-Fax-API/jobs/update_faxes_status.rb >> /home/hebi/personal-projects/BLT-Fax-API/log/fax_job.log 2>&1
+*/2 * * * * /home/hebi/.rbenv/shims/ruby /home/hebi/personal-projects/BLT-Fax-API/jobs/update_faxes_status.rb >> /home/hebi/personal-projects/BLT-Fax-API/logs/update_faxes_status.log 2>&1
 
