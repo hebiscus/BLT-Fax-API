@@ -1,17 +1,17 @@
 require_relative "../models/fax"
-require 'json'
-require 'time'
+require "json"
+require "time"
 
 module Repositories
   class Faxes
-    FAXES_DB = File.expand_path('../db/faxes.json', __dir__)
+    FAXES_DB = File.expand_path("../db/faxes.json", __dir__)
 
     def all
       load_db.values.map { |attributes| build(**attributes) }
     end
 
     def all_pending
-      all.select { |fax| fax.status == "pending"}
+      all.select { |fax| fax.status == "pending" }
     end
 
     def find(id)
@@ -41,7 +41,7 @@ module Repositories
     end
 
     def save_faxes(faxes)
-      File.write(FAXES_DB,  JSON.pretty_generate(faxes))
+      File.write(FAXES_DB, JSON.pretty_generate(faxes))
     end
 
     def build(**attributes)

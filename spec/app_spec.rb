@@ -1,6 +1,6 @@
 require "spec_helper"
 require "rack/test"
-require "./app" 
+require "./app"
 require "./services/flakiness_checker"
 require_relative "../auth/authentication"
 
@@ -13,7 +13,7 @@ RSpec.describe "FaxApp", type: :request do
 
   let(:auth_token) { "dnvp34023" }
 
-  let(:fax_mock) { Fax.new(id: "1", file_path: "", receiver_number: 2, status: "pending", user_token: auth_token, created_at: Time.now)}
+  let(:fax_mock) { Fax.new(id: "1", file_path: "", receiver_number: 2, status: "pending", user_token: auth_token, created_at: Time.now) }
 
   describe "GET /faxes" do
     it "returns faxes associated with token" do
@@ -28,7 +28,7 @@ RSpec.describe "FaxApp", type: :request do
     end
   end
 
-  describe "GET /faxes/:id" do 
+  describe "GET /faxes/:id" do
     it "returns fax by its id" do
       allow_any_instance_of(Authentication::TokenValidator).to receive(:valid?).with(auth_token).and_return(true)
       allow_any_instance_of(Repositories::Faxes).to receive(:find).with(fax_mock.id).and_return(fax_mock)
@@ -42,7 +42,6 @@ RSpec.describe "FaxApp", type: :request do
   end
 
   describe "POST /faxes" do
-
     let(:file) do
       Rack::Test::UploadedFile.new(
         StringIO.new("Amazing fax"), "text/plain", original_filename: "test.txt"
@@ -85,7 +84,6 @@ RSpec.describe "FaxApp", type: :request do
     end
 
     it "doesn't allow to create a fax when token is incorrect" do
-
       header "Authorization", "Bearer invalid"
       post "/faxes", {
         receiver_number: "123",
@@ -99,7 +97,7 @@ RSpec.describe "FaxApp", type: :request do
 
   describe "POST /auth" do
     let(:tokens_path) { "./auth/tokens.json" }
-    
+
     it "geerates a new auth token and returns it" do
       existing_tokens = ["abc123"]
       allow(SecureRandom).to receive(:hex).with(10).and_return("new_token")
