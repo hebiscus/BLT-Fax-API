@@ -1,3 +1,4 @@
+require_relative "config/sinatra_patch"
 require "sinatra"
 require "ostruct"
 require_relative "services/flakiness_checker"
