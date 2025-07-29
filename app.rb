@@ -9,13 +9,16 @@ class FaxApp < Sinatra::Base
   # @param [String] fax_number
   # @param [File] file
   post "/faxes" do
-    halt 403, "Forbidden: Invalid token" unless authenticated?
+    # halt 403, "Forbidden: Invalid token" unless authenticated?
     return [500, {"Content-Type" => "text/plain"}, ["Error: Something went wrong...maybe check if it's raining? Server might be under water"]] if FlakinessChecker.should_fail?
     return [400, {"Content-Type" => "text/plain"}, ["No file selected"]] unless params[:file] && (tempfile = params[:file][:tempfile])
     return [400, {"Content-Type" => "text/plain"}, ["Invalid file type"]] unless params[:file][:type] == "text/plain"
 
+    faxes_dir = "/data/faxes"
+    FileUtils.mkdir_p(faxes_dir) unless Dir.exist?(faxes_dir)
+
     fax_uuid = SecureRandom.uuid
-    target = "./faxes/fax-#{fax_uuid}"
+    target = File.join(faxes_dir, "fax-#{fax_uuid}")
     File.binwrite(target, tempfile.read)
 
     new_fax = Fax.new(id: fax_uuid, file_path: target, receiver_number: params[:receiver_number], status: "pending", user_token: token)
@@ -42,9 +45,11 @@ class FaxApp < Sinatra::Base
   end
 
   get "/faxes" do
-    halt 403, "Forbidden: Invalid token" unless authenticated?
+    # halt 403, "Forbidden: Invalid token" unless authenticated?
 
-    faxes = Repositories::Faxes.new.find_by_token(token).sort_by { |fax| fax.created_at }.reverse
+    faxes = Repositories::Faxes.new.all
+
+    # faxes = Repositories::Faxes.new.find_by_token(token).sort_by { |fax| fax.created_at }.reverse
 
     erb :index, locals: {faxes: faxes}
   end
@@ -73,6 +78,9 @@ class FaxApp < Sinatra::Base
   def token
     request.env["HTTP_AUTHORIZATION"].split(" ")[1]
   end
+
+  # set :port, 8080
+  # set :bind, "0.0.0.0"
 
   run! if __FILE__ == $0
 end
