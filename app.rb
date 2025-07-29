@@ -15,7 +15,7 @@ class FaxApp < Sinatra::Base
     return [400, {"Content-Type" => "text/plain"}, ["No file selected"]] unless params[:file] && (tempfile = params[:file][:tempfile])
     return [400, {"Content-Type" => "text/plain"}, ["Invalid file type"]] unless params[:file][:type] == "text/plain"
 
-    faxes_dir = "/data/faxes"
+    faxes_dir = "./data/faxes"
     FileUtils.mkdir_p(faxes_dir) unless Dir.exist?(faxes_dir)
 
     fax_uuid = SecureRandom.uuid
