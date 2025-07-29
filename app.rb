@@ -15,8 +15,11 @@ class FaxApp < Sinatra::Base
     return [400, {"Content-Type" => "text/plain"}, ["No file selected"]] unless params[:file] && (tempfile = params[:file][:tempfile])
     return [400, {"Content-Type" => "text/plain"}, ["Invalid file type"]] unless params[:file][:type] == "text/plain"
 
+    # refactor this mess later
     faxes_dir = "./data/faxes"
-    FileUtils.mkdir_p(faxes_dir) unless Dir.exist?(faxes_dir)
+    faxes_db_path = File.join(settings.root, "db", "faxes.json")
+    FileUtils.mkdir_p(faxes_dir)
+    FileUtils.mkdir_p(File.dirname(faxes_db_path))
 
     fax_uuid = SecureRandom.uuid
     target = File.join(faxes_dir, "fax-#{fax_uuid}")
