@@ -11,7 +11,7 @@ class FaxApp < Sinatra::Base
   # @param [File] file
   post "/faxes" do
     # halt 403, "Forbidden: Invalid token" unless authenticated?
-    return [500, {"Content-Type" => "text/plain"}, ["Error: Something went wrong...maybe check if it's raining? Server might be under water"]] if FlakinessChecker.should_fail?
+    return [500, {"Content-Type" => "text/plain"}, ["Something went wrong...maybe check if it's raining? Server might be under water"]] if FlakinessChecker.should_fail?
     return [400, {"Content-Type" => "text/plain"}, ["No file selected"]] unless params[:file] && (tempfile = params[:file][:tempfile])
     return [400, {"Content-Type" => "text/plain"}, ["Invalid file type"]] unless params[:file][:type] == "text/plain"
 
