@@ -15,6 +15,10 @@ RSpec.describe "FaxApp", type: :request do
 
   let(:fax_mock) { Fax.new(id: "1", file_path: "", receiver_number: 2, status: "pending", user_token: auth_token, created_at: Time.now) }
 
+   before do
+    header "Host", "localhost"
+  end
+
   describe "GET /faxes" do
     it "returns faxes associated with token" do
       allow_any_instance_of(Authentication::TokenValidator).to receive(:valid?).with(auth_token).and_return(true)
